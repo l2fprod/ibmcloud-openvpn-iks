@@ -1,0 +1,75 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ovpn0
+  namespace: ovpn
+  annotations:
+    service.kubernetes.io/ibm-load-balancer-cloud-provider-enable-features: "nlb"
+    service.kubernetes.io/ibm-load-balancer-cloud-provider-ip-type: "public"
+spec:
+  ports:
+    - port: 1194
+      targetPort: 1194
+      protocol: UDP
+      name: openvpn
+  externalTrafficPolicy: Local
+  selector:
+    app: ovpn0
+  type: LoadBalancer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ovpn0
+  namespace: ovpn
+spec:
+  selector:
+    matchLabels:
+      app: ovpn0
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: ovpn0
+    spec:
+      containers:
+      - image: kylemanna/openvpn
+        name: ovpn
+        ports:
+        - containerPort: 1194
+          name: openvpn
+          protocol: UDP
+        securityContext:
+          capabilities:
+            add:
+            - NET_ADMIN
+        volumeMounts:
+        - name: ovpn0-key
+          mountPath: /etc/openvpn/pki/private
+        - name: ovpn0-cert
+          mountPath: /etc/openvpn/pki/issued
+        - name: ovpn0-pki
+          mountPath: /etc/openvpn/pki
+        - name: ovpn0-conf
+          mountPath: /etc/openvpn
+        - name: ccd0
+          mountPath: /etc/openvpn/ccd
+      volumes:
+      - name: ovpn0-key
+        secret:
+          secretName: ovpn0-key
+          defaultMode: 0600
+      - name: ovpn0-cert
+        secret:
+          secretName: ovpn0-cert
+      - name: ovpn0-pki
+        secret:
+          secretName: ovpn0-pki
+          defaultMode: 0600
+      - name: ovpn0-conf
+        configMap:
+          name: ovpn0-conf
+      - name: ccd0
+        configMap:
+          name: ccd0
