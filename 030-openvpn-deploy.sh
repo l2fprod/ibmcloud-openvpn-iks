@@ -16,3 +16,6 @@ kubectl create configmap ovpn0-conf --from-file=server/
 kubectl create configmap ccd0 --from-file=server/ccd
 
 kubectl apply -f ../032-openvpn-app.yaml
+kubectl apply -f ../033-user-apps.yaml
+
+kubectl describe services --namespace sample-app

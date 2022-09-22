@@ -11,7 +11,6 @@ terraform {
 variable "basename" {}
 variable "ibmcloud_api_key" {}
 variable "region" { default = "us-south" }
-variable "kube_version" { default = "1.24.3" }
 variable "worker_pool_flavor" { default = "bx2.4x16" }
 variable "worker_nodes_per_zone" { default = 2 }
 
@@ -57,7 +56,6 @@ resource "ibm_container_vpc_cluster" "cluster" {
   vpc_id            = ibm_is_vpc.vpc.id
   flavor            = var.worker_pool_flavor
   worker_count      = "1"
-  kube_version      = var.kube_version
   resource_group_id = ibm_resource_group.group.id
   zones {
     subnet_id = ibm_is_subnet.subnet_1.id
@@ -73,4 +71,12 @@ output "resource_group_name" {
 
 output "cluster_name" {
   value = ibm_container_vpc_cluster.cluster.name
+}
+
+output "pod_subnet" {
+  value = ibm_container_vpc_cluster.cluster.pod_subnet
+}
+
+output "service_subnet" {
+  value = ibm_container_vpc_cluster.cluster.service_subnet
 }

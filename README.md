@@ -15,10 +15,25 @@ Based on:
 
 ## Connect
 
-Once everything is deployed:
+Once everything is deployed, find the OpenVPN domain name with:
 
+```sh
+OPENVPN_DOMAIN_NAME=$(ibmcloud is load-balancers --output json | jq -r '.[] | select(.profile.family=="Network") | .hostname')
+echo "OpenVPN domain is $OPENVPN_DOMAIN_NAME"
 ```
-openvpn --config config/client.ovpn --remote <load-balancer-domain-or-public-ip>
+
+Start the OpenVPN client with:
+
+```sh
+openvpn --config config/client.ovpn --remote $OPENVPN_DOMAIN_NAME
+```
+
+From there you can access the `nginx` deployed in another namespace:
+
+```sh
+NGINX_IP=$(kubectl get service nginx-service --namespace sample-app -o json | jq -r .spec.clusterIP)
+echo "NGINX Cluster IP is $NGINX_IP"
+curl http://$NGINX_IP
 ```
 
 ## Destroy
